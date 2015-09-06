@@ -2,7 +2,7 @@
 import React, {Component, PropTypes} from 'react';
 import {bindActionCreators} from 'redux';
 import {connect} from 'react-redux';
-import * as infoActions from '../actions/infoActions';
+import * as infoActions from '../actions/championActions';
 if (__CLIENT__) {
   require('./InfoBar.scss');
 }

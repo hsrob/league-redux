@@ -1,3 +1,2 @@
-export info from './info';
-export widgets from './widgets';
+export champions from './champions';
 export auth from './auth';
