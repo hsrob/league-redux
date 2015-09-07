@@ -13,9 +13,10 @@ if (__CLIENT__) {
 }
 
 export default class App extends Component {
-    constructor(props, context){
-        super(props, context);
-    }
+    static propTypes = {
+        children: PropTypes.object.isRequired
+    };
+
     static contextTypes = {
         router: PropTypes.object.isRequired,
         store: PropTypes.object.isRequired
@@ -33,7 +34,13 @@ export default class App extends Component {
 
     componentWillMount() {
         const {router, store} = this.context;
-        router.addTransitionHook(createTransitionHook(store));
+        this.transitionHook = createTransitionHook(store);
+        router.addTransitionHook(this.transitionHook);
+    }
+
+    componentWillUnmount() {
+        const {router} = this.context;
+        router.removeTransitionHook(this.transitionHook);
     }
 
     render() {

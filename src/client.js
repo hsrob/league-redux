@@ -1,7 +1,11 @@
-/* global __DEVTOOLS__ */
+/**
+ * THIS IS THE ENTRY POINT FOR THE CLIENT, JUST LIKE server.js IS THE ENTRY POINT FOR THE SERVER.
+ */
+import 'babel/polyfill';
 import React from 'react';
 import BrowserHistory from 'react-router/lib/BrowserHistory';
 import Location from 'react-router/lib/Location';
+import queryString from 'query-string';
 import createStore from './redux/create';
 import ApiClient from './ApiClient';
 import universalRouter from './universalRouter';
@@ -10,25 +14,27 @@ const client = new ApiClient();
 
 const dest = document.getElementById('content');
 const store = createStore(client, window.__data);
-const location = new Location(document.location.pathname, document.location.search);
+const search = document.location.search;
+const query = search && queryString.parse(search);
+const location = new Location(document.location.pathname, query);
 universalRouter(location, history, store)
-  .then((component) => {
-    if (__DEVTOOLS__) {
-      const { DevTools, DebugPanel, LogMonitor } = require('redux-devtools/lib/react');
-      console.info('You will see a "Warning: React attempted to reuse markup in a container but the checksum was' +
-        ' invalid." message. That\'s because the redux-devtools are enabled.');
-      React.render(<div>
-        {component}
-        <DebugPanel top right bottom key="debugPanel">
-          <DevTools store={store} monitor={LogMonitor}/>
-        </DebugPanel>
-      </div>, dest);
-    } else {
-      React.render(component, dest);
-    }
-  }, (error) => {
-    console.error(error);
-  });
+    .then(({component}) => {
+      if (__DEVTOOLS__) {
+        const { DevTools, DebugPanel, LogMonitor } = require('redux-devtools/lib/react');
+        console.info('You will see a "Warning: React attempted to reuse markup in a container but the checksum was' +
+            ' invalid." message. That\'s because the redux-devtools are enabled.');
+        React.render(<div>
+          {component}
+          <DebugPanel top right bottom key="debugPanel">
+            <DevTools store={store} monitor={LogMonitor}/>
+          </DebugPanel>
+        </div>, dest);
+      } else {
+        React.render(component, dest);
+      }
+    }, (error) => {
+      console.error(error);
+    });
 
 
 if (process.env.NODE_ENV !== 'production') {

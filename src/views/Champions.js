@@ -1,10 +1,11 @@
 /*global __CLIENT__*/
 import React, {Component, PropTypes} from 'react';
 import {bindActionCreators} from 'redux';
-import {isLoaded} from '../reducers/champions';
+import DocumentMeta from 'react-document-meta';
 import {connect} from 'react-redux';
-import * as championActions from '../actions/championActions';
-import {load as loadChampions} from '../actions/championActions';
+import * as championActions from '../ducks/champions';
+import {isLoaded, load as loadChampions} from '../ducks/champions';
+import {initializeWithKey} from 'redux-form';
 let mui = require('material-ui');
 let _ = require('lodash');
 let {
@@ -21,16 +22,23 @@ let {
     } = mui;
 let { Colors, Typography } = Styles;
 let ThemeManager = new Styles.ThemeManager();
-if (__CLIENT__) {
-    //require('./Widgets.scss');
-}
 
-class Champions extends Component {
+@connect(
+    state => ({
+        champions: state.champions.data,
+        error: state.champions.error,
+        loading: state.champions.loading
+    }),
+    dispatch => ({
+        ...bindActionCreators({...championActions}, dispatch)
+})
+)
+export default class Champions{
     static propTypes = {
         champions: PropTypes.array,
         error: PropTypes.string,
         loading: PropTypes.bool,
-        load: PropTypes.func
+        load: PropTypes.func.isRequired
     };
 
     static childContextTypes = {
@@ -43,52 +51,6 @@ class Champions extends Component {
         }
     }
 
-    render() {
-        const {champions, error, loading, load} = this.props;
-        console.log('champions', champions);
-        let champChunks = champions && champions.length ? _.chunk(champions,  3): null;
-        let getAvatar = (imageName) => { return "http://ddragon.leagueoflegends.com/cdn/5.2.1/img/champion/" + imageName;};
-        return (
-            <div id="champion-list">
-                {champChunks &&
-                    _.map(champChunks, (chunk) => {
-                        return (
-                            <div className="row">
-                                {
-                                    _.map(chunk, (champ) => {
-                                        return (
-                                                <div className="col-xs-4">
-                                                    <Card key={champ.id}>
-                                                        <CardHeader title={champ.name} subtitle={champ.title} avatar={getAvatar(champ.image.full)} />
-                                                        <CardText>
-                                                            {champ.blurb}
-                                                        </CardText>
-                                                    </Card>
-                                                </div>
-                                        )
-                                    })
-                                }
-                            </div>);
-                    })
-                }
-            </div>
-        );
-    }
-}
-
-@connect(state => ({
-    champions: state.champions.data,
-    error: state.champions.error,
-    loading: state.champions.loading
-}))
-export default class ChampionsContainer{
-    static propTypes = {
-        champions: PropTypes.array,
-        error: PropTypes.string,
-        loading: PropTypes.bool,
-        dispatch: PropTypes.func.isRequired
-    }
-
     static fetchData(store) {
         console.log('fetchData from', store);
         if (!isLoaded(store.getState())) {
@@ -97,9 +59,34 @@ export default class ChampionsContainer{
     }
 
     render() {
-        const { champions, error, loading, dispatch } = this.props;
-        console.log('champions (container)', champions);
-        return <Champions champions={champions} error={error}
-                          loading={loading} {...bindActionCreators(championActions, dispatch)}/>;
+        const { champions, error, loading, dispatch, load } = this.props;
+        let champChunks = champions && champions.length ? _.chunk(champions,  3): null;
+        console.log('champions', champions);
+        let getAvatar = (imageName) => { return "http://ddragon.leagueoflegends.com/cdn/5.2.1/img/champion/" + imageName;};
+        return (
+            <div id="champion-list">
+                {champChunks &&
+                _.map(champChunks, (chunk) => {
+                    return (
+                        <div className="row">
+                            {
+                                _.map(chunk, (champ) => {
+                                    return (
+                                        <div className="col-xs-4">
+                                            <Card key={champ.id}>
+                                                <CardHeader title={champ.name} subtitle={champ.title} avatar={getAvatar(champ.image.full)} />
+                                                <CardText>
+                                                    {champ.blurb}
+                                                </CardText>
+                                            </Card>
+                                        </div>
+                                    )
+                                })
+                            }
+                        </div>);
+                })
+                }
+            </div>
+        );
     }
 }

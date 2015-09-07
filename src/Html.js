@@ -12,13 +12,13 @@ import serialize from 'serialize-javascript';
  */
 export default class Html extends Component {
     static propTypes = {
-        webpackStats: PropTypes.object,
+        assets: PropTypes.object,
         component:    PropTypes.object,
         store:        PropTypes.object
     }
 
     render() {
-        const {webpackStats, component, store} = this.props;
+        const {assets, component, store} = this.props;
         const bodyStyle = { margin: 0 };
         return (
             <html lang="en-us">
@@ -31,15 +31,16 @@ export default class Html extends Component {
                 <link href="//cdn.jsdelivr.net/flexboxgrid/6.2.0/flexboxgrid.min.css" rel="stylesheet" type="text/css"/>
                 <link href="//cdnjs.cloudflare.com/ajax/libs/font-awesome/4.3.0/css/font-awesome.min.css"
                       media="screen, projection" rel="stylesheet" type="text/css"/>
-                {webpackStats.css.map((css, i) => <link href={css} ref={i}
-                                                        media="screen, projection" rel="stylesheet"
-                                                        type="text/css"/>)}
+                {Object.keys(assets.styles).map((style, i) =>
+                    <link href={assets.styles[style]} key={i} media="screen, projection"
+                          rel="stylesheet" type="text/css"/>
+                )}
             </head>
             <body style={bodyStyle}>
             <div id="content" dangerouslySetInnerHTML={{__html: React.renderToString(component)}}/>
             <script
                 dangerouslySetInnerHTML={{__html: `window.__data=${serialize(store.getState())};`}}/>
-            <script src={webpackStats.script[0]}/>
+            <script src={assets.javascript.main}/>
             </body>
             </html>
         );
